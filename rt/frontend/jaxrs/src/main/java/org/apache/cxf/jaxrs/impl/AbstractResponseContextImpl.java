@@ -148,5 +148,6 @@ public abstract class AbstractResponseContextImpl {
 
     public void setStatusInfo(StatusType status) {
         setStatus(status.getStatusCode());
+        r.setStatus(status.getStatusCode(), status.getReasonPhrase());
     }
 }

@@ -179,7 +179,11 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
 
         // Write the entity
         entity = InjectionUtils.getEntity(response.getActualEntity());
-        setResponseStatus(message, getActualStatus(response.getStatus(), entity));
+        if (response.getStatus() == -1) {
+            setResponseStatus(message, getActualStatus(response.getStatus(), entity));
+        } else {
+            setResponseStatus(message, response.getStatusInfo());
+        }
         if (entity == null) {
             if (!headResponse) {
                 responseHeaders.putSingle(HttpHeaders.CONTENT_LENGTH, "0");
@@ -474,6 +478,16 @@ public class JAXRSOutInterceptor extends AbstractOutDatabindingInterceptor {
             HttpServletResponse response =
                 (HttpServletResponse)message.get(AbstractHTTPDestination.HTTP_RESPONSE);
             response.setStatus(status);
+        }
+    }
+
+    private void setResponseStatus(Message message, Response.StatusType status) {
+        message.put(Message.RESPONSE_CODE, status.getStatusCode());
+        boolean responseHeadersCopied = isResponseHeadersCopied(message);
+        if (responseHeadersCopied) {
+            HttpServletResponse response =
+                (HttpServletResponse)message.get(AbstractHTTPDestination.HTTP_RESPONSE);
+            response.setStatus(status.getStatusCode(), status.getReasonPhrase());
         }
     }
 
